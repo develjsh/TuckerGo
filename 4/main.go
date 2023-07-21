@@ -6,6 +6,7 @@ package main
 
 import "fmt"
 
+// 함수에서 main은 프로그램 시작점입니다.
 func main() {
 	fmt.Println("Hello World")
 }
