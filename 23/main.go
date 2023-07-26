@@ -80,6 +80,32 @@ func (j *SquareJob) Do() {
 	fmt.Printf("%d 작업 완료 - 결과 %d\n", j.index, j.index * j.index)
 }
 
+func square(wg *sync.WaitGroup, ch chan int) {
+	n := <- ch
+
+	time.Sleep(time.Second)
+	fmt.Println("Square: ", n*n)
+	wg.Done()
+}
+
+func square2(wg *sync.WaitGroup, ch chan int) {
+	tick := time.Tick(time.Second)
+	terminate := time.After(10*time.Second)
+
+	for {
+		select {
+		case <- tick:
+			fmt.Println("Tick")
+		case <- terminate:
+			fmt.Println("Terminated")
+			wg.Done()
+			return
+		case n := <- ch:
+			fmt.Println("Square: ", n*n)
+			time.Sleep(time.Second)
+		}
+	}
+}
 
 func main() {
 	// 1
@@ -118,19 +144,34 @@ func main() {
 	// wg.Wait()
 
 	// 5
-	var jobList [10]Job
-	for i := 0; i < 10; i++ {
-		jobList[i] = &SquareJob{i}
-	}
+	// var jobList [10]Job
+	// for i := 0; i < 10; i++ {
+	// 	jobList[i] = &SquareJob{i}
+	// }
 
-	wg.Add(10)
+	// wg.Add(10)
 
-	for i := 0; i < 10; i++ {
-		job := jobList[i]
-		go func() {
-			job.Do()
-			wg.Done()
-		}()
-	}
-	wg.Wait()
+	// for i := 0; i < 10; i++ {
+	// 	job := jobList[i]
+	// 	go func() {
+	// 		job.Do()
+	// 		wg.Done()
+	// 	}()
+	// }
+	// wg.Wait()
+
+	// 6
+	// ch := make(chan int)
+
+	// wg.Add(1)
+	// go square(&wg, ch)
+	// ch <- 9
+	// wg.Wait()
+
+	//7
+	ch := make(chan int)
+
+	go square2(&wg, ch)
+	ch <- 9
+	fmt.Println("never print")
 }
